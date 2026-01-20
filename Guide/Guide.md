@@ -438,35 +438,55 @@ We can see that this branch corresponds to a BCM located in Hall A.
 ### BPM
 
 
-The Beam Position Monitor (BPM) is a cylindrical cavity with four
-symmetrical antennas, or wires, that pick up the RF-signal of the
-passing electron beam. The wires form a box that the beam passes
-through.
+The Beam Position Monitor (BPM) is a cylindrical cavity with four symmetrical antennas, or wires, that pick up the RF-signal of the
+passing electron beam. The wires are labeled as either positive (plus, P) or negative (minus,M) in the BPM coordinate system. As the electron beam passes through the BPM, signals are induced in the four-wire stripline antennas placed transverse to the direction of motion of the beam.The amplitudes of the signals are proportional to the distance of the beam centroid from the antenna and the frequencies are the same as the electron beam frequency.
+
+
 
 ![image](Images/BPM_Wire_Drawing.png)
 
-The wires are labeled as either positive (plus, p) or negative (minus,
-m) given the beam coordinate system. From the plus and minus wire-pair,
-we can obtain the horizontal or vertical position by calculating the
-signal asymmetry and multiplying it by a scaling factor, which is `~18`.
+From the plus and minus antenna signals digitized by the ADCs, the beam positions $X_{bpm}$ and $Y_{bpm}$ in the BPM-coordinate system are determined using
 
-The BPM and BCM together constitute the beam-monitoring
-devices(Beminiwattha 2013).The naming scheme for the BPM branches always
-starts with `bpm` and is followed by two keywords, one that indicates
-where in the beamline it is monitoring and the other what beam parameter
-it is monitoring. The location keywords are described in the Beamline
+$X_{bpm}  = k \times \left[ \frac{(XP-XP_{off})-\alpha_X (XM - XM_{off})}{(XP-XP_{off})+ \alpha_X (XM - XM_{off})} \right] $
+
+
+$Y_{bpm}  = k \times \left[ \frac{(YP-YP_{off})-\alpha_Y (YM - YM_{off})}{(YP-YP_{off})+ \alpha_Y (YM - YM_{off})} \right] $
+
+where $k$ = BSEN scaling factor * 18.87 adc counts/mm is the conversion factor for BPM signals to units of millimetres, $\alpha_{X/Y}$ is a relative gain factor used to take into account the difference between the positive and negative X/Y wire signals,  $XP(M), YP(M)$ signals from positive and negative X/Y wires with  the subscript "off" denoting pre-determined beam-off pedestals. Most BPMs in the injector and hall beamline have a BSEN scalling factor = 1 but there are some that have scaling factors different from 1. The BSEN scaling factor of each BPM long with the relative gains and pedestals are provided as inputs to the analyzer using the beamline_geometry.map parameter file found in Parity/prminout directory. 
+
+To avoid the distortion from synchrotron radiation present in the horizontal and vertical planes, the BPMs in the beamline are typically rotated in the anticlock-wise direction around the beam axis by an angle γ w.r.t the hall coordinate system. Therefore, the beam position in the hall coordinates is obtained by rotating the BPM readings using
+
+$Rel X = X_{bpm} \cos\gamma + Y_{bpm}\sin\gamma$
+
+$Rel Y = X_{bpm} \sin\gamma - Y_{bpm}\cos\gamma$
+
+The BPMs in the injector beamline are NOT rotated.The rotational status of each BPM is set in the beamline_geometry.map file.
+Reference: (Waidyawansa 2013)  
+
+The relative beam position in hall coordintes given by RelX and RelX should then be corrected to take into account the difference in the ideal position and surveyed position of a BPMs X/Y axis.This is done by taking the difference between the X/Y ideal location vs surveyed location as an X/Y offset and correcting the relative positions as
+
+$X = RelX + X_{offset}$
+
+$Y = RelY + Y_{offset} $
+
+The X/Y ofsets for each BPM provided in the beamline_geometry.map.
+
+The naming scheme for the BPM branches always starts with `bpm` and is followed by two keywords, one that indicates
+where in the beamline it is monitoring and the other what beam parameter it is monitoring. The location keywords are described in the Beamline
 Monitors section. The beam parameter keywords are described below.
 
   Keyword  |                                Description
   ---------| ------------------------------------------
-  XP|                                            X-plus
-  XM|                                           X-minus
-  X |          $scale \times (\frac{X_p-X_m}{X_p+X_m})$
-  YP|                                            Y-plus
-  YM|                                           Y-minus
-  Y |          $scale \times (\frac{Y_p-Y_m}{Y_p+Y_m})$
-  Elli|                                     Ellipticity
-  WS|                                          Wire Sum
+  XP|              X-plus wire signal reading
+  XM|              X-minus wire signal reading
+  X |              constructed beam X position 
+RelX|              Beam X position relative to the hall coordinates
+  YP|              Y-plus wire reading
+  YM|              Y-minus wire reading
+  Y |              constructed beam Y position 
+RelY|              Beam Y position relative to the hall coordinates
+  Elli|            Ellipticity is calculated as $coefficients \times \frac{(X_P+X_M-Y_P-Y_M)}{(X_P+X_M+Y_P+Y_M)}$ where the coefficients are $~ \frac{2k^2}{4\sigma}$, $k$ = stripline calibration, $\sigma$ = e beam spot size. 
+  WS|              Wire Sum = $XP+XM+YP+YM$
 
 ``` {.c}
     root [9] evt->Print("bpm*")
