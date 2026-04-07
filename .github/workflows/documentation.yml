@@ -105,7 +105,7 @@ jobs:
           echo "::endgroup::"
 
     - name: Upload documentation artifacts (for PR preview)
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: doxygen-documentation-${{ matrix.release }}-${{ matrix.arch }}-${{ matrix.os }}-${{ matrix.compiler }}
         path: Doxygen/html/
@@ -113,7 +113,7 @@ jobs:
 
     - name: Setup GitHub Pages (main branch only)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      uses: actions/configure-pages@v5
+      uses: actions/configure-pages@v6
 
     - name: Upload to GitHub Pages (main branch only)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -135,7 +135,7 @@ jobs:
     steps:
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v4
+      uses: actions/deploy-pages@v5
 
     - name: Output documentation URL
       run: |
